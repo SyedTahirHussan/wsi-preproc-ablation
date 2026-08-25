@@ -122,3 +122,18 @@ class AblationCell:
         if with_predictions:
             out["predictions"] = [asdict(p) for p in self.predictions]
         return out
+
+
+@dataclass(frozen=True)
+class AblationRun:
+    """Everything one invocation of the grid produced.
+
+    `cohort_losses` counts slides each tissue arm could not tile well enough to
+    grade across the whole cohort, not only the held-out split. The split is a
+    property of the experiment; losing a slide is a property of the detector,
+    and reporting it per split understates it by whatever fraction of the cohort
+    happens to be held out.
+    """
+
+    cells: list[AblationCell]
+    cohort_losses: dict[str, int]

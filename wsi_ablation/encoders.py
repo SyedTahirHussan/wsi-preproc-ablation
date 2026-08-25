@@ -31,7 +31,7 @@ from wsi_ablation.stain import rgb_to_concentrations
 ByteArr = NDArray[np.uint8]
 FloatArr = NDArray[np.float32]
 
-CNN_INPUT_PX = 48
+CNN_INPUT_PX = 64
 FIXED_BANK_DIM = 22
 EMBED_DIM = 32
 
@@ -90,19 +90,25 @@ class FixedFeatureBank:
 
 
 class TileCNN(torch.nn.Module):
-    """Small convolutional tile encoder, trained with the attention head."""
+    """Small convolutional tile encoder, trained with the attention head.
+
+    No batch normalisation, deliberately. A bag is one slide and a batch is that
+    slide's tiles, so batch statistics are slide statistics: normalising by them
+    subtracts exactly the quantity the grade lives in. Mean brightness and the
+    fraction of a tile that is open lumen separate a pattern-3 gland from a
+    pattern-5 sheet, and a BatchNorm in front of the first convolution removes
+    both before the network sees them. That version of this encoder scored a
+    kappa indistinguishable from zero on every cell of the grid.
+    """
 
     def __init__(self, embed_dim: int = EMBED_DIM) -> None:
         super().__init__()
         self.body = torch.nn.Sequential(
             torch.nn.Conv2d(3, 16, 3, stride=2, padding=1),
-            torch.nn.BatchNorm2d(16),
             torch.nn.ReLU(inplace=True),
             torch.nn.Conv2d(16, 32, 3, stride=2, padding=1),
-            torch.nn.BatchNorm2d(32),
             torch.nn.ReLU(inplace=True),
             torch.nn.Conv2d(32, 48, 3, stride=2, padding=1),
-            torch.nn.BatchNorm2d(48),
             torch.nn.ReLU(inplace=True),
             torch.nn.AdaptiveAvgPool2d(1),
             torch.nn.Flatten(),

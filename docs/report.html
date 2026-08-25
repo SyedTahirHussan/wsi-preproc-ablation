@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preprocessing ablation for prostate whole-slide grading</title>
+<style>
+:root { --ink:#171a1f; --muted:#5d646e; --rule:#e2e6ea; --accent:#3c5a80; --bg:#ffffff; }
+@media (prefers-color-scheme: dark) {
+  :root { --ink:#e8eaed; --muted:#9aa2ad; --rule:#2c3138; --accent:#8fb0d8; --bg:#14171b; }
+}
+body { font: 15px/1.55 -apple-system, "Segoe UI", Roboto, sans-serif; color:var(--ink);
+       background:var(--bg); margin:0 auto; max-width:1080px; padding:40px 24px 72px; }
+h1 { font-size:24px; margin:0 0 4px; letter-spacing:-0.01em; }
+h2 { font-size:15px; margin:34px 0 10px; padding-bottom:5px; border-bottom:1px solid var(--rule); }
+.sub { color:var(--muted); margin:0 0 6px; }
+table { border-collapse:collapse; width:100%; font-size:13px; }
+th,td { border-bottom:1px solid var(--rule); padding:6px 8px; text-align:left; }
+th { font-weight:600; color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:0.04em; }
+td.num { text-align:right; font-variant-numeric:tabular-nums; }
+code { background:color-mix(in srgb, var(--rule) 55%, transparent); padding:1px 5px; border-radius:3px; font-size:12px; }
+img { max-width:100%; height:auto; border:1px solid var(--rule); border-radius:6px; }
+.note { border-left:3px solid var(--accent); padding:8px 0 8px 14px; color:var(--muted); margin:16px 0; }
+.wrap { overflow-x:auto; }
+</style></head><body>
+<h1>Preprocessing ablation for prostate whole-slide grading</h1>
+<p class="sub">12 cells &middot; tissue detection x colour handling x tile encoder &middot; content digest 536b849004640063</p>
+<div class="note">The cohort is synthetic and every slide in it was written by <code>wsi_ablation/synth.py</code>. No wet-lab or patient data is used or claimed. The generator builds in the three effects under test - stain fading, scanner colour drift, and grade rendered as morphology - so what this run demonstrates is that the instrument detects those effects and reports the failures agreement hides. Testing whether the effects hold on archival material is what the instrument is for.</div>
+<h2>Provenance</h2>
+<div class="wrap"><table>
+<tr><th>code version</th><td>0.1.0</td><th>git</th><td>48d836a</td></tr>
+<tr><th>config hash</th><td colspan="3"><code>a8ab3c2e09fb9663892dc7f4e314363df24265516fb6dbcb6cd8988e23135e8e</code></td></tr>
+<tr><th>data hash</th><td colspan="3"><code>8469402c9ba161a697501800a1ea65d5bca73d0bc3dc0097f1eb898f054cd404</code></td></tr>
+<tr><th>content digest</th><td><code>536b849004640063</code></td><th>python</th><td>3.12.12</td></tr>
+</table></div>
+<h2>Ablation grid</h2>
+<img src="ablation_overview.png" alt="Agreement and failure counts for every cell of the ablation">
+<div class="wrap"><table>
+<tr><th>tissue</th><th>colour</th><th>encoder</th><th>kappa_w</th><th>95% CI</th>
+<th>accuracy</th><th>slides lost</th><th>threshold crossings</th><th>graded</th><th>tiles/slide</th></tr>
+<tr><td>threshold</td><td>none</td><td>task-trained</td><td class='num'>0.445</td><td class='num'>0.26 to 0.63</td><td class='num'>0.369</td><td class='num'>1</td><td class='num'>28</td><td class='num'>65</td><td class='num'>23.2</td></tr>
+<tr><td>threshold</td><td>none</td><td>fixed-bank</td><td class='num'>0.428</td><td class='num'>0.24 to 0.62</td><td class='num'>0.369</td><td class='num'>1</td><td class='num'>27</td><td class='num'>65</td><td class='num'>23.2</td></tr>
+<tr><td>threshold</td><td>macenko</td><td>task-trained</td><td class='num'>0.535</td><td class='num'>0.33 to 0.71</td><td class='num'>0.492</td><td class='num'>1</td><td class='num'>16</td><td class='num'>65</td><td class='num'>23.2</td></tr>
+<tr><td>threshold</td><td>macenko</td><td>fixed-bank</td><td class='num'>0.394</td><td class='num'>0.12 to 0.59</td><td class='num'>0.338</td><td class='num'>1</td><td class='num'>22</td><td class='num'>65</td><td class='num'>23.2</td></tr>
+<tr><td>threshold</td><td>physical</td><td>task-trained</td><td class='num'>0.448</td><td class='num'>0.26 to 0.62</td><td class='num'>0.308</td><td class='num'>1</td><td class='num'>31</td><td class='num'>65</td><td class='num'>23.2</td></tr>
+<tr><td>threshold</td><td>physical</td><td>fixed-bank</td><td class='num'>0.395</td><td class='num'>0.21 to 0.58</td><td class='num'>0.308</td><td class='num'>1</td><td class='num'>27</td><td class='num'>65</td><td class='num'>23.2</td></tr>
+<tr><td>unetpp</td><td>none</td><td>task-trained</td><td class='num'>0.284</td><td class='num'>0.06 to 0.48</td><td class='num'>0.303</td><td class='num'>0</td><td class='num'>29</td><td class='num'>66</td><td class='num'>24.0</td></tr>
+<tr><td>unetpp</td><td>none</td><td>fixed-bank</td><td class='num'>0.319</td><td class='num'>0.09 to 0.51</td><td class='num'>0.242</td><td class='num'>0</td><td class='num'>28</td><td class='num'>66</td><td class='num'>24.0</td></tr>
+<tr><td>unetpp</td><td>macenko</td><td>task-trained</td><td class='num'>0.564</td><td class='num'>0.37 to 0.72</td><td class='num'>0.394</td><td class='num'>0</td><td class='num'>21</td><td class='num'>66</td><td class='num'>24.0</td></tr>
+<tr><td>unetpp</td><td>macenko</td><td>fixed-bank</td><td class='num'>0.613</td><td class='num'>0.42 to 0.75</td><td class='num'>0.409</td><td class='num'>0</td><td class='num'>15</td><td class='num'>66</td><td class='num'>24.0</td></tr>
+<tr><td>unetpp</td><td>physical</td><td>task-trained</td><td class='num'>0.296</td><td class='num'>0.06 to 0.50</td><td class='num'>0.242</td><td class='num'>0</td><td class='num'>30</td><td class='num'>66</td><td class='num'>24.0</td></tr>
+<tr><td>unetpp</td><td>physical</td><td>fixed-bank</td><td class='num'>0.344</td><td class='num'>0.11 to 0.53</td><td class='num'>0.242</td><td class='num'>0</td><td class='num'>28</td><td class='num'>66</td><td class='num'>24.0</td></tr>
+</table></div>
+<h2>How to read this</h2>
+<p class="sub">Read the left panel and the right panel together. Cells that sit within each other's confidence intervals on agreement can still differ in how many slides never reached the grader, and in how many of the errors they did make moved a case across the surveillance-to-treatment line. Those are the two columns a method section usually omits, which is the omission this repository exists to argue against.</p>
+</body></html>

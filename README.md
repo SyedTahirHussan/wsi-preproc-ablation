@@ -25,6 +25,25 @@ Twelve cells. Each trains its own gated-attention MIL head ([Ilse et al., ICML 2
 
 The frozen arm is a stand-in for a public pathology foundation model used the way benchmarks use them: weights frozen, a light head trained on top. It is a stand-in and the code never calls it anything else. `FrozenEncoder` in `wsi_ablation/encoders.py` is the protocol a real encoder satisfies; [docs/foundation-models.md](docs/foundation-models.md) gives the twenty-line adapter for [UNI](https://doi.org/10.1038/s41591-024-02857-3) and [Virchow](https://doi.org/10.1038/s41591-024-03141-0). Swapping one in changes the numbers and changes no part of the experiment.
 
+## What the shipped run found
+
+On the 140-slide cohort, held out on an unseen scanner and a later acquisition period:
+
+| | |
+|---|---|
+| Largest swing in kappa from changing the colour arm alone | **0.29** (0.284 to 0.564, UNet++ / task-trained) |
+| Mean gap between the two encoders, preprocessing held fixed | **0.06** |
+| Slides the thresholding arm could not tile well enough to grade | **8 of 140**; the UNet++ arm lost none |
+| Grade errors crossing the treatment line, best against worst cell | 15 against 31 |
+
+Colour handling moved agreement about five times further than the choice of tile encoder did. That is the shape of result the claim above predicts, on a cohort built to contain the effect, which is why it is evidence about the instrument and not yet about archival material.
+
+The physical-calibration arm is the interesting disappointment. It corrects the instrument and nothing else, and the drift written into this generator sits at the low end of what a real scanner does, so Macenko, which also absorbs staining-batch variation, beats it here. On material carrying a decade of drift that ordering is an open question, and it is the question worth asking.
+
+One result came out of debugging rather than design and is worth stating, because it is the kind of thing an ablation is supposed to catch. The task-trained encoder originally scored a kappa indistinguishable from zero in every cell. A bag is one slide and a batch is that slide's tiles, so the BatchNorm in front of the first convolution was normalising by slide statistics. Mean brightness and open-lumen fraction, which are where the grade lives, are slide statistics. Removing it took that arm from -0.08 to 0.45. `wsi_ablation/encoders.py` carries the note so the layer does not come back.
+
+Full table, bootstrap intervals and per-slide records: [the run report](https://syedtahirhussan.github.io/wsi-preproc-ablation/report.html).
+
 ## Quickstart
 
 ```bash
@@ -37,6 +56,8 @@ make run                     # 140 slides, twelve cells, about fifteen minutes o
 Outputs land in `runs/report/`: `report.html` for a reviewer, `records.jsonl` with a per-slide prediction and attention entropy for every cell, `summary.json`, `ablation_overview.png`, and `manifest.json` carrying the config hash, the data hash, the git commit and a content digest.
 
 `make repro` runs the pipeline twice and fails if the digests differ. That gate catches the ordinary sources of irreproducibility at the commit that introduced them: an unseeded shuffle, a set iteration, a dict that inherited its order from a filesystem listing.
+
+`make docs` regenerates the GitHub Pages site at [syedtahirhussan.github.io/wsi-preproc-ablation](https://syedtahirhussan.github.io/wsi-preproc-ablation/) from `runs/report/summary.json`, so the numbers on that page cannot drift away from the run that produced them.
 
 ## Why the slide files are real slide files
 

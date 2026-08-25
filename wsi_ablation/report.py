@@ -17,7 +17,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from wsi_ablation.types import AblationCell
+from wsi_ablation.types import AblationCell, AblationRun
 
 ACCENT = "#3c5a80"
 WARM = "#b4593a"
@@ -31,15 +31,17 @@ def write_records(path: Path, cells: list[AblationCell]) -> None:
             handle.write(json.dumps(cell.to_json(with_predictions=True), sort_keys=True) + "\n")
 
 
-def summarise(cells: list[AblationCell]) -> dict[str, Any]:
+def summarise(run: AblationRun) -> dict[str, Any]:
+    cells = run.cells
     return {
         "n_cells": len(cells),
         "cells": [cell.to_json() for cell in cells],
         "best_kappa": max((c.metrics.kappa_w for c in cells), default=0.0),
         "worst_kappa": min((c.metrics.kappa_w for c in cells), default=0.0),
-        "total_slides_lost": {
+        "cohort_slides_lost": dict(sorted(run.cohort_losses.items())),
+        "held_out_slides_lost": {
             arm: max(c.metrics.slides_lost for c in cells if c.tissue == arm)
-            for arm in {c.tissue for c in cells}
+            for arm in sorted({c.tissue for c in cells})
         },
     }
 

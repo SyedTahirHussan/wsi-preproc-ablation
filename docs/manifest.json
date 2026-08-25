@@ -1,0 +1,9 @@
+{
+  "code_version": "0.1.0",
+  "config_hash": "a8ab3c2e09fb9663892dc7f4e314363df24265516fb6dbcb6cd8988e23135e8e",
+  "content_digest": "536b849004640063",
+  "data_hash": "8469402c9ba161a697501800a1ea65d5bca73d0bc3dc0097f1eb898f054cd404",
+  "git_sha": "48d836a",
+  "python": "3.12.12",
+  "seed": 20260825
+}

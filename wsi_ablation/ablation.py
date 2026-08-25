@@ -34,6 +34,7 @@ from wsi_ablation.slide import Slide
 from wsi_ablation.tissue import TissueDetector, train_unetpp
 from wsi_ablation.types import (
     AblationCell,
+    AblationRun,
     CellMetrics,
     ColourArm,
     EncoderArm,
@@ -52,7 +53,7 @@ class RunConfig:
     data_dir: str = "data/cohort"
     out_dir: str = "runs/report"
     seed: int = 20260825
-    epochs: int = 26
+    epochs: int = 40
     segmenter_epochs: int = 20
     segmenter_train_slides: int = 24
     bootstrap: int = 500
@@ -171,11 +172,12 @@ def run_ablation(
     colour_targets: dict[str, list[list[float]]],
     config: RunConfig,
     verbose: bool = True,
-) -> list[AblationCell]:
+) -> AblationRun:
     root = Path(config.data_dir)
     calibrations = fit_calibrations(colour_targets)
     segmenter = None
     cells: list[AblationCell] = []
+    cohort_losses: dict[str, int] = {}
 
     for tissue in config.tissue_arms:
         if tissue == "unetpp" and segmenter is None:
@@ -191,6 +193,7 @@ def run_ablation(
             spec.slide_id: extract_tiles(spec, root, detector) for spec in specs
         }
         lost = sum(1 for t in tiles_by_slide.values() if not t.result.detected)
+        cohort_losses[tissue] = lost
         if verbose:
             print(f"  {tissue}: {lost} of {len(specs)} slides produced too little tissue to grade")
 
@@ -209,4 +212,4 @@ def run_ablation(
                         f"({time.time() - started:.1f}s)"
                     )
         del tiles_by_slide
-    return cells
+    return AblationRun(cells=cells, cohort_losses=cohort_losses)

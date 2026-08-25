@@ -9,7 +9,7 @@ cohort:
 run:
   out_dir: runs/report
   seed: 20260825
-  epochs: 26
+  epochs: 40
   segmenter_epochs: 20
   segmenter_train_slides: 24
   bootstrap: 500

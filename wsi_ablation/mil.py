@@ -103,25 +103,45 @@ def train_grader(
     bags: list[Bag],
     in_dim: int,
     trainable_encoder: bool,
-    epochs: int = 24,
-    lr: float = 1.5e-3,
+    epochs: int = 40,
+    lr: float = 1.2e-3,
     seed: int = 20260825,
+    bags_per_step: int = 8,
 ) -> MILGrader:
+    """Fit one cell's grader.
+
+    Bags differ in tile count, so they cannot be stacked into a tensor batch.
+    Gradients are accumulated over `bags_per_step` bags instead, which is the
+    same thing for the optimiser and matters here: a step per bag makes the
+    result depend on which bag happened to be last, and an ablation whose cells
+    differ by that much cannot resolve the effect it is looking for. The cosine
+    schedule is for the same reason, to stop cells landing on different points
+    of a noisy trajectory.
+    """
     torch.manual_seed(seed)
     model = MILGrader(in_dim=in_dim, trainable_encoder=trainable_encoder)
-    optimiser = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=1e-4)
+    optimiser = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-3)
+    steps_per_epoch = max(1, -(-len(bags) // bags_per_step))
+    schedule = torch.optim.lr_scheduler.CosineAnnealingLR(
+        optimiser, T_max=max(1, epochs * steps_per_epoch)
+    )
     rng = np.random.default_rng(seed)
     tensors = [(bag.to_tensor(), ordinal_targets(bag.label)) for bag in bags]
 
     model.train()
     for _ in range(epochs):
-        for index in rng.permutation(len(tensors)):
-            instances, target = tensors[index]
-            logits, _ = model(instances)
-            loss = -(target * torch.log_softmax(logits, dim=-1)).sum()
+        order = rng.permutation(len(tensors))
+        for start in range(0, len(order), bags_per_step):
+            chunk = order[start : start + bags_per_step]
             optimiser.zero_grad()
-            loss.backward()
+            for index in chunk:
+                instances, target = tensors[index]
+                logits, _ = model(instances)
+                loss = -(target * torch.log_softmax(logits, dim=-1)).sum() / len(chunk)
+                loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)
             optimiser.step()
+            schedule.step()
     model.eval()
     return model
 

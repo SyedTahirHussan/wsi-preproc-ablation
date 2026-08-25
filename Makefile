@@ -30,10 +30,7 @@ repro:
 	$(PY) -m wsi_ablation.cli --config configs/smoke.yaml repro
 
 docs: run
-	cp runs/report/report.html docs/report.html
-	cp runs/report/ablation_overview.png docs/ablation_overview.png
-	cp runs/report/summary.json docs/summary.json
-	cp runs/report/manifest.json docs/manifest.json
+	$(PY) scripts/build_pages.py
 
 clean:
 	rm -rf runs data .pytest_cache .ruff_cache .mypy_cache **/__pycache__ *.egg-info

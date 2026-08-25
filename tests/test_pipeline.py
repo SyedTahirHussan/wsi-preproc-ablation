@@ -60,7 +60,7 @@ def test_cnn_input_is_decimated_not_interpolated() -> None:
     rng = np.random.default_rng(4)
     tiles = (rng.random((2, 128, 128, 3)) * 255).astype(np.uint8)
     tensor = tiles_to_cnn_input(tiles)
-    assert tensor.shape == (2, 3, 48, 48)
+    assert tensor.shape == (2, 3, 64, 64)
     assert np.isclose(float(tensor[0, 0, 0, 0]) * 255, float(tiles[0, 0, 0, 0]))
 
 
@@ -81,7 +81,9 @@ def test_grader_learns_a_separable_toy_task() -> None:
         for _ in range(6):
             features = (rng.normal(offset, 0.15, size=(8, FIXED_BANK_DIM))).astype(np.float32)
             bags.append(Bag(f"toy-{label}", tiles=None, features=features, label=label))
-    model = train_grader(bags, in_dim=FIXED_BANK_DIM, trainable_encoder=False, epochs=30, seed=0)
+    model = train_grader(
+        bags, in_dim=FIXED_BANK_DIM, trainable_encoder=False, epochs=150, seed=0, bags_per_step=4
+    )
     assert isinstance(model, MILGrader)
     assert predict(model, bags[0])[0] == 1
     assert predict(model, bags[-1])[0] == 4

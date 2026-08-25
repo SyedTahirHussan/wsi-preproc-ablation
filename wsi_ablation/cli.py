@@ -26,7 +26,7 @@ from wsi_ablation.report import plot_overview, summarise, write_page, write_reco
 from wsi_ablation.slide import Slide
 from wsi_ablation.synth import CohortConfig, generate_cohort, load_cohort
 from wsi_ablation.tissue import TissueDetector
-from wsi_ablation.types import AblationCell
+from wsi_ablation.types import AblationRun
 
 PAGE_NOTE = (
     "The cohort is synthetic and every slide in it was written by "
@@ -73,7 +73,7 @@ def command_cohort(cohort: CohortConfig, force: bool) -> None:
     )
 
 
-def _run_once(cohort: CohortConfig, run: RunConfig, verbose: bool) -> list[AblationCell]:
+def _run_once(cohort: CohortConfig, run: RunConfig, verbose: bool) -> AblationRun:
     command_cohort(cohort, force=False)
     specs, targets = load_cohort(cohort.out_dir)
     return run_ablation(specs, targets, run, verbose=verbose)
@@ -81,9 +81,10 @@ def _run_once(cohort: CohortConfig, run: RunConfig, verbose: bool) -> list[Ablat
 
 def command_run(cohort: CohortConfig, run: RunConfig) -> None:
     started = time.time()
-    cells = _run_once(cohort, run, verbose=True)
+    result = _run_once(cohort, run, verbose=True)
+    cells = result.cells
     out_dir = Path(run.out_dir)
-    summary = summarise(cells)
+    summary = summarise(result)
 
     manifest = build_manifest(
         code_version=__version__,

@@ -10,5 +10,4 @@ dist/
 venv/
 .DS_Store
 runs/
-!runs/.gitkeep
 data/

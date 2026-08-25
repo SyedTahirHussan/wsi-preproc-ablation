@@ -47,9 +47,10 @@ def test_ablation_is_reproducible(tiny_cohort: tuple[list[SlideSpec], Path]) -> 
         colour_arms=("none",),
         encoder_arms=("fixed-bank",),
     )
-    first = summarise(run_ablation(specs, targets, config, verbose=False))
-    second = summarise(run_ablation(specs, targets, config, verbose=False))
-    assert sha256_json(first) == sha256_json(second)
+    first = run_ablation(specs, targets, config, verbose=False)
+    second = run_ablation(specs, targets, config, verbose=False)
+    assert first.cohort_losses == second.cohort_losses
+    assert sha256_json(summarise(first)) == sha256_json(summarise(second))
 
 
 def test_cli_run_writes_every_artefact(tmp_path: Path) -> None:

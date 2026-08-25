@@ -1,0 +1,15 @@
+# Full cohort. About fifteen minutes on a laptop CPU, no GPU required.
+cohort:
+  n_slides: 140
+  seed: 20260825
+  faint_fraction: 0.20
+  severe_fade_fraction: 0.04
+  out_dir: data/cohort
+
+run:
+  out_dir: runs/report
+  seed: 20260825
+  epochs: 26
+  segmenter_epochs: 20
+  segmenter_train_slides: 24
+  bootstrap: 500

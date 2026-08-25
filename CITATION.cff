@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "wsi-preproc-ablation: preprocessing as the independent variable in computational-pathology benchmarking"
+authors:
+  - family-names: Hussan
+    given-names: Syed Tahir
+    email: tahirsherazi786@gmail.com
+version: 0.1.0
+date-released: 2026-08-25
+license: Apache-2.0
+repository-code: "https://github.com/SyedTahirHussan/wsi-preproc-ablation"
+keywords:
+  - computational-pathology
+  - whole-slide-imaging
+  - tissue-detection
+  - colour-calibration
+  - stain-normalisation
+  - multiple-instance-learning
+  - reproducibility

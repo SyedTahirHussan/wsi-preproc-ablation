@@ -1,0 +1,17 @@
+# What continuous integration runs: the whole pipeline, small enough to finish
+# inside a job, and large enough that a broken stage fails rather than passes.
+cohort:
+  n_slides: 24
+  seed: 20260825
+  faint_fraction: 0.25
+  severe_fade_fraction: 0.10
+  out_dir: data/smoke
+
+run:
+  out_dir: runs/smoke
+  seed: 20260825
+  epochs: 4
+  segmenter_epochs: 3
+  segmenter_train_slides: 6
+  bootstrap: 50
+  colour_arms: ["none", "physical"]
